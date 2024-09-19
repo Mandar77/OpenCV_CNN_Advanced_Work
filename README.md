@@ -1,6 +1,6 @@
 # CS5330_FA24_Group1
-## Group Members:**
-Cen Chang
-Harshal Jorwekar
-Mandar Shrirang Ambulkar
-Shreeya Sushilkumar Halwasia
+## Group Members:
+1. Cen Chang
+2. Harshal Jorwekar
+3. Mandar Shrirang Ambulkar
+4. Shreeya Sushilkumar Halwasia
