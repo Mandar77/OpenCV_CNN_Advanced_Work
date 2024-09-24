@@ -34,4 +34,4 @@ Main Loop : The main loop continuously captures video frames from the webcam, ap
 
 ### Video Demonstration of Application
 
-Link to video: https://youtu.be/HYPBj_Ge30U
+Link to video: https://youtu.be/zMZbE_ToIWE
