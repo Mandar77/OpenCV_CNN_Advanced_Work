@@ -3,4 +3,3 @@
 1. Cen Chang
 2. Harshal Jorwekar
 3. Mandar Shrirang Ambulkar
-4. Shreeya Sushilkumar Halwasia
