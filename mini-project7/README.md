@@ -87,7 +87,7 @@ The `LiveClassifier.py` script performs the following steps:
 
 ## Model and Dataset Access
 
-- Dataset: [Provide link to your dataset in cloud storage]
+- Dataset: https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/CS5330-mini-project7_data?csf=1&web=1&e=Wp2KDM
 - Trained Model: [Provide link to your trained model if not included in the repo]
 
 ## Video Demonstration
