@@ -9,7 +9,7 @@ This project implements a real-time object classification system using a Convolu
 1. Install required libraries:
 - pip install opencv-python tensorflow numpy pillow
 2. Download the pre-trained model:
-- Download `live_classifier_model.h5` from [provide link to your cloud storage]
+- Download `live_classifier_model.h5` from https://northeastern-my.sharepoint.com/:u:/r/personal/ambulkar_m_northeastern_edu/Documents/live_classifier_model.h5?csf=1&web=1&e=vLOsjF
 - Place it in the `mini-project7` directory
 
 ## Usage Guide
@@ -88,7 +88,7 @@ The `LiveClassifier.py` script performs the following steps:
 ## Model and Dataset Access
 
 - Dataset: https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/CS5330-mini-project7_data?csf=1&web=1&e=Wp2KDM
-- Trained Model: [Provide link to your trained model if not included in the repo]
+- Trained Model: https://northeastern-my.sharepoint.com/:u:/r/personal/ambulkar_m_northeastern_edu/Documents/live_classifier_model.h5?csf=1&web=1&e=vLOsjF
 
 ## Video Demonstration
 
