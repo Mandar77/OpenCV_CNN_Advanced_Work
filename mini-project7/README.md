@@ -29,7 +29,7 @@ This project implements a real-time object classification system using a Convolu
 
 ### 1. Dataset Collection and Preprocessing
 
-- Dataset: 100+ images per class (remote control, cell phone, TV, coffee mug)
+- Dataset: 100 images per class (remote control, cell phone, TV, coffee mug)
 - Preprocessing: Resizing to 224x224 pixels, normalization
 
 ### 2. CNN Model Architecture
