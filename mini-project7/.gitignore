@@ -1,10 +1,10 @@
 #Ignore data
-CS5330_FA24_Group1/mini-project7/data/
+mini-project7/data/
 #Ignore test video
-CS5330_FA24_Group1/mini-project7/test.mp4
+mini-project7/test.mp4
 
 #Ignore Image Downloader code
-CS5330_FA24_Group1/mini-project7/imagedownloader.py
+mini-project7/imagedownloader.py
 
 #Ignore Output Video
-CS5330_FA24_Group1/mini-project7/output.avi
+mini-project7/output.avi
