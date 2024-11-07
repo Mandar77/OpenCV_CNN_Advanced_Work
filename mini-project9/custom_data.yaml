@@ -1,5 +1,6 @@
 train: ./dataset/Images/train
 val: ./dataset/Images/val
+test: ./dataset/Images/test
 
 nc: 2
 names: ['Stop Sign', 'Traffic Signal']

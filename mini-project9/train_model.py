@@ -7,7 +7,7 @@ from ultralytics import YOLO
 
 def train_yolo():
     # Load a pretrained YOLOv5 model
-    model = YOLO('yolov5s.pt')
+    model = YOLO('yolov5su.pt')
     
     # Train the model
     results = model.train(data='custom_data.yaml', epochs=100, imgsz=640)
