@@ -9,3 +9,6 @@ yolov5
 
 #ignore runs
 runs
+
+#ignore model
+*.pt
