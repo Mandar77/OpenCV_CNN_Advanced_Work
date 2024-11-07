@@ -92,4 +92,4 @@ The `LiveClassifier.py` script performs the following steps:
 
 ## Video Demonstration
 
-[Provide link to your video demonstration]
+https://youtube.com/shorts/_oR95TbGVP4?feature=share
