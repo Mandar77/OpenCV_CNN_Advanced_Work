@@ -1,0 +1,8 @@
+scikit-learn
+tensorflow
+opencv-python
+numpy
+albumentations
+ultralytics
+torch
+bing-image-downloader
