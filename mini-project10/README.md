@@ -48,24 +48,25 @@ We created a custom dataset for vehicle segmentation:
    - Organized images in `data/raw/images`
    - Generated corresponding masks using YOLO detection
    - Filtered images to focus on vehicle-only scenes
-   - Current dataset size: ~491 image-mask pairs
+   - Current dataset size: ~543 image-mask pairs and corresponding labels
 
 3. **YOLO Detection Results**:
    - Successfully detected vehicles (cars, trucks, buses)
    - Filtered out non-vehicle objects
    - Handled multiple vehicle instances per image
    - Generated binary masks for segmentation
+   - Generated corresponding labels according to yolo format.
 
 ## Implementation Details
 
 ### 1. Data Pipeline
 - **Image Processing**:
-  ```python
-  def preprocess_image(image, target_size=(256, 256)):
-      image = cv2.resize(image, target_size)
-      return image.astype(np.float32) / 255.0
 
-Mask Generation:
+- Image Resized to (256,256)
+
+- Mask Generation:
+
+```
 python
 def create_vehicle_mask(image, detection):
     mask = np.zeros(image.shape[:2], dtype=np.uint8)
@@ -74,15 +75,16 @@ def create_vehicle_mask(image, detection):
             # Create mask for vehicle
             cv2.drawContours(mask, [obj['contour']], -1, 255, -1)
     return mask
+```
 
-2. Model Architecture
+### 2. Model Architecture
+
 Modified U-Net architecture with:
-Input size: 256x256x3
-Encoder: 4 conv blocks with max pooling
-Decoder: 4 upsampling blocks with skip connections
-Output: Binary segmentation mask
-3. Training Configuration
-text
+- Input size: 256x256x3
+- Encoder: 4 conv blocks with max pooling
+- Decoder: 4 upsampling blocks with skip connections
+- Output: Binary segmentation mask
+
 # Model Parameters
 INPUT_IMAGE_WIDTH: 256
 INPUT_IMAGE_HEIGHT: 256
