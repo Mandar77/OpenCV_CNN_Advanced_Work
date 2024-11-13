@@ -7,7 +7,6 @@ This project implements a U-Net architecture for vehicle segmentation using a cu
 ## Project Structure
 
 ```
-bash
 mini-project10/
 ├── data/
 │ └── raw/
@@ -85,84 +84,63 @@ Modified U-Net architecture with:
 - Decoder: 4 upsampling blocks with skip connections
 - Output: Binary segmentation mask
 
-# Model Parameters
-INPUT_IMAGE_WIDTH: 256
-INPUT_IMAGE_HEIGHT: 256
-NUM_CHANNELS: 3
-NUM_CLASSES: 1
+### 3. Model Parameters
+- INPUT_IMAGE_WIDTH: 256
+- INPUT_IMAGE_HEIGHT: 256
+- NUM_CHANNELS: 3
+- NUM_CLASSES: 1
 
-# Training Parameters
-INIT_LR: 0.0003
-NUM_EPOCHS: 150
-BATCH_SIZE: 8
+### 4. Training Parameters
+- INIT_LR: 0.0003
+- NUM_EPOCHS: 150
+- BATCH_SIZE: 8
 
-4. Optimizations Implemented
-Data Augmentation:
-Random rotation (±45°)
-Horizontal flips
-Brightness variation
-Zoom range: 0.2
-Model Improvements:
-Batch normalization
-Dropout layers (rate=0.3)
-Skip connections
-Dice loss function
-Training Enhancements:
-Learning rate scheduling
-Early stopping
-Model checkpointing
-Setup Instructions
-Environment Setup:
-bash
+### 5. Optimizations Implemented
+- Data Augmentation:
+   - Random rotation (±45°)
+   - Horizontal flips
+   - Brightness variation
+   - Zoom range: 0.2
+- Model Improvements:
+   - Batch normalization
+   - Dropout layers (rate=0.3)
+   - Skip connections
+   - Dice loss function
+- Training Enhancements:
+   - Learning rate scheduling
+   - Early stopping
+   - Model checkpointing
+
+## Setup Instructions
+
+### Environment Setup:
+
+```
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # or
 .\venv\Scripts\activate  # Windows
+``` 
 
-# Install dependencies
-pip install -r requirements.txt
+### Install dependencies
 
-Dataset Generation:
-bash
-# Generate dataset
-python src/data/generate_data.py
+`pip install -r requirements.txt`
 
-Model Training:
-bash
-# Train the model
-python main.py
+### Dataset Generation:
 
-Current Results
-Dataset Statistics:
-Total images: 491
-Training set: 393 (80%)
-Validation set: 98 (20%)
-Model Performance:
-Training accuracy: ~60%
-Validation accuracy: ~64%
-Current limitations: Working on improving accuracy
-Next Steps
-Model Optimization:
-Implement additional data augmentation
-Try different model architectures
-Experiment with loss functions
-Data Quality:
-Improve mask generation
-Filter dataset for better quality
-Add more diverse vehicle images
-Training Improvements:
-GPU acceleration
-Cross-validation
-Ensemble methods
-Dependencies
-Python 3.8+
-TensorFlow 2.x
-OpenCV
-NumPy
-Matplotlib
-Ultralytics YOLO
-Bing Image Downloader
-References
-U-Net Paper: U-Net: Convolutional Networks for Biomedical Image Segmentation
-YOLO Documentation: Ultralytics YOLOv8
+-  Generate dataset:
+
+`python generate_data.py`
+
+- Generate Masks:
+
+`python generate_masks.py`
+
+- Generate labels:
+
+`python generate_labels.py`
+
+### Model Training:
+
+`python main.py`

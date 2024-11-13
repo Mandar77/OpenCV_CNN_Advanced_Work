@@ -1,98 +1,145 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import json
+import tensorflow as tf
+
+class Visualizer:
+    def __init__(self, config):
+        self.config = config
+        # Create necessary directories
+        os.makedirs(os.path.dirname(config['PLOT_PATH']), exist_ok=True)
+        os.makedirs(os.path.dirname(config['MODEL_PATH']), exist_ok=True)
+
+    def save_metrics(self, history):
+        """Save training metrics to JSON"""
+        metrics = {
+            'accuracy': {
+                'final': float(history.history['accuracy'][-1]),
+                'best': float(max(history.history['accuracy'])),
+                'history': [float(x) for x in history.history['accuracy']]
+            },
+            'val_accuracy': {
+                'final': float(history.history['val_accuracy'][-1]),
+                'best': float(max(history.history['val_accuracy'])),
+                'history': [float(x) for x in history.history['val_accuracy']]
+            },
+            'loss': {
+                'final': float(history.history['loss'][-1]),
+                'best': float(min(history.history['loss'])),
+                'history': [float(x) for x in history.history['loss']]
+            },
+            'val_loss': {
+                'final': float(history.history['val_loss'][-1]),
+                'best': float(min(history.history['val_loss'])),
+                'history': [float(x) for x in history.history['val_loss']]
+            },
+            'dice_coefficient': {
+                'final': float(history.history['dice_coefficient'][-1]),
+                'best': float(max(history.history['dice_coefficient'])),
+                'history': [float(x) for x in history.history['dice_coefficient']]
+            },
+            'val_dice_coefficient': {
+                'final': float(history.history['val_dice_coefficient'][-1]),
+                'best': float(max(history.history['val_dice_coefficient'])),
+                'history': [float(x) for x in history.history['val_dice_coefficient']]
+            }
+        }
+
+        # Save metrics to JSON file
+        metrics_file = os.path.join(os.path.dirname(self.config['PLOT_PATH']), 
+                                  'model_metrics.json')
+        with open(metrics_file, 'w') as f:
+            json.dump(metrics, f, indent=4)
+        
+        print(f"\nMetrics saved to: {metrics_file}")
+        return metrics
+
+    def plot_training_history(self, history):
+        """Plot and save training history"""
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+        
+        # Plot accuracy
+        ax1.plot(history.history['accuracy'], label='Training')
+        ax1.plot(history.history['val_accuracy'], label='Validation')
+        ax1.set_title('Model Accuracy')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Accuracy')
+        ax1.legend()
+        ax1.grid(True)
+        
+        # Plot loss
+        ax2.plot(history.history['loss'], label='Training')
+        ax2.plot(history.history['val_loss'], label='Validation')
+        ax2.set_title('Model Loss')
+        ax2.set_xlabel('Epoch')
+        ax2.set_ylabel('Loss')
+        ax2.legend()
+        ax2.grid(True)
+        
+        plt.tight_layout()
+        plt.savefig(self.config['HISTORY_PLOT_PATH'])
+        plt.close()
+        
+        print(f"Training history plot saved to: {self.config['HISTORY_PLOT_PATH']}")
+
+    def display_predictions(self, model, X_test, y_test):
+        """Display and save sample predictions"""
+        predictions = model.predict(X_test[:5])
+        
+        fig, axes = plt.subplots(5, 3, figsize=(15, 25))
+        
+        for idx in range(5):
+            # Original image
+            axes[idx, 0].imshow(X_test[idx])
+            axes[idx, 0].set_title('Original Image')
+            axes[idx, 0].axis('off')
+            
+            # True mask
+            axes[idx, 1].imshow(y_test[idx, ..., 0], cmap='gray')
+            axes[idx, 1].set_title('True Mask')
+            axes[idx, 1].axis('off')
+            
+            # Predicted mask
+            axes[idx, 2].imshow(predictions[idx, ..., 0], cmap='gray')
+            axes[idx, 2].set_title(f'Predicted Mask\nDice: {self.calculate_dice(y_test[idx], predictions[idx]):.3f}')
+            axes[idx, 2].axis('off')
+        
+        plt.tight_layout()
+        plt.savefig(self.config['PLOT_PATH'])
+        plt.close()
+        
+        print(f"Predictions visualization saved to: {self.config['PLOT_PATH']}")
+
+    def calculate_dice(self, y_true, y_pred, smooth=1e-7):
+        """Calculate Dice coefficient for a single prediction"""
+        y_true_f = y_true.flatten()
+        y_pred_f = y_pred.flatten()
+        intersection = np.sum(y_true_f * y_pred_f)
+        return (2. * intersection + smooth) / (np.sum(y_true_f) + np.sum(y_pred_f) + smooth)
+
+# Wrapper functions for backward compatibility
+def display_predictions(model, X_test, y_test, config):
+    visualizer = Visualizer(config)
+    visualizer.display_predictions(model, X_test, y_test)
 
 def plot_training_history(history, config):
-    """Plot training history metrics"""
-    plt.figure(figsize=(15, 5))
-    
-    # Plot accuracy
-    plt.subplot(121)
-    plt.plot(history.history['accuracy'], label='Training')
-    plt.plot(history.history['val_accuracy'], label='Validation')
-    plt.title('Model Accuracy')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.legend()
-    plt.grid(True)
-    
-    # Plot loss
-    plt.subplot(122)
-    plt.plot(history.history['loss'], label='Training')
-    plt.plot(history.history['val_loss'], label='Validation')
-    plt.title('Model Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.grid(True)
-    
-    plt.tight_layout()
-    plt.savefig(config['HISTORY_PLOT_PATH'])
-    plt.close()
+    visualizer = Visualizer(config)
+    visualizer.plot_training_history(history)
 
-def display_predictions(model, X_test, y_test, config):
-    """Display sample predictions"""
-    # Make predictions
-    predictions = model.predict(X_test[:5])
+def save_results(model, history, X_test, y_test, config):
+    """Save all results: model, metrics, and visualizations"""
+    visualizer = Visualizer(config)
     
-    # Create figure
-    plt.figure(figsize=(15, 10))
+    # Save model
+    model.save(config['MODEL_PATH'])
+    print(f"\nModel saved to: {config['MODEL_PATH']}")
     
-    for idx in range(5):
-        # Original image
-        plt.subplot(5, 3, idx*3 + 1)
-        plt.imshow(X_test[idx])
-        plt.title('Original Image')
-        plt.axis('off')
-        
-        # True mask
-        plt.subplot(5, 3, idx*3 + 2)
-        plt.imshow(y_test[idx, ..., 0], cmap='gray')
-        plt.title('True Mask')
-        plt.axis('off')
-        
-        # Predicted mask
-        plt.subplot(5, 3, idx*3 + 3)
-        plt.imshow(predictions[idx, ..., 0], cmap='gray')
-        plt.title('Predicted Mask')
-        plt.axis('off')
+    # Save metrics
+    metrics = visualizer.save_metrics(history)
     
-    plt.tight_layout()
-    plt.savefig(config['PLOT_PATH'])
-    plt.close()
-
-def plot_attention_maps(model, image, layer_names=None):
-    """Visualize attention maps from the model"""
-    # Get intermediate layer outputs
-    layer_outputs = [layer.output for layer in model.layers 
-                    if 'attention' in layer.name.lower()]
-    attention_model = tf.keras.Model(inputs=model.input, 
-                                   outputs=layer_outputs)
+    # Generate and save visualizations
+    visualizer.plot_training_history(history)
+    visualizer.display_predictions(model, X_test, y_test)
     
-    # Get attention maps
-    attention_maps = attention_model.predict(np.expand_dims(image, 0))
-    
-    # Plot attention maps
-    num_maps = len(attention_maps)
-    if num_maps == 0:
-        print("No attention layers found")
-        return
-    
-    plt.figure(figsize=(15, 5))
-    
-    # Plot original image
-    plt.subplot(1, num_maps+1, 1)
-    plt.imshow(image)
-    plt.title('Original Image')
-    plt.axis('off')
-    
-    # Plot attention maps
-    for idx, attention_map in enumerate(attention_maps):
-        plt.subplot(1, num_maps+1, idx+2)
-        plt.imshow(np.mean(attention_map[0], axis=-1), cmap='viridis')
-        plt.title(f'Attention Map {idx+1}')
-        plt.axis('off')
-    
-    plt.tight_layout()
-    plt.savefig('attention_maps.png')
-    plt.close()
+    return metrics

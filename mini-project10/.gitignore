@@ -12,7 +12,6 @@ check_data.py
 process_existing_data.py
 organize_images.py
 generate_missing_masks.py
-clean_data.py
 
 #ignore yolov8 model
 yolov8x-seg.pt
@@ -22,3 +21,6 @@ sync_check_results.txt
 
 #ignore zip
 mini-proj-10.zip
+
+#ignore model
+*.keras

@@ -2,7 +2,7 @@ import yaml
 import os
 import tensorflow as tf
 from src.models.train_model import train_model
-from src.visualization.visualize import display_predictions, plot_training_history
+from src.visualization.visualize import save_results
 from src.data.make_dataset import load_and_prepare_data, verify_data
 
 def load_config():
@@ -46,15 +46,19 @@ if __name__ == "__main__":
     # Verify data
     verify_data(X_train, X_test, y_train, y_test)
 
-    # Train model
+    # Train model and save results
     try:
         model, history = train_model(config, X_train, y_train, X_test, y_test)
         
-        # Generate visualizations
-        display_predictions(model, X_test, y_test, config)
-        plot_training_history(history, config)
+        # Save all results
+        metrics = save_results(model, history, X_test, y_test, config)
         
-        print("\nTraining completed successfully!")
+        print("\nTraining and saving completed successfully!")
+        print(f"\nFinal Metrics:")
+        print(f"Accuracy: {metrics['accuracy']['final']:.4f}")
+        print(f"Dice Coefficient: {metrics['dice_coefficient']['final']:.4f}")
+        print(f"Validation Accuracy: {metrics['val_accuracy']['final']:.4f}")
+        print(f"Validation Dice Coefficient: {metrics['val_dice_coefficient']['final']:.4f}")
         
     except Exception as e:
         print(f"\nError during training: {str(e)}")
