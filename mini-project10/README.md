@@ -3,6 +3,9 @@
 ## Project Overview
 This project implements a U-Net architecture for vehicle segmentation using a custom dataset. The implementation includes data collection, preprocessing, mask generation, and model training with various optimizations.
 
+### Model and Data Links:
+
+You can find the generated data and models [here](https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/mini-project10?csf=1&web=1&e=eScXmp)
 
 ## Project Structure
 
@@ -136,6 +139,10 @@ source venv/bin/activate  # Linux/Mac
 - Generate Masks:
 
 `python generate_masks.py`
+
+- Clean Data:
+
+`python clean_data.py`
 
 - Generate labels:
 
