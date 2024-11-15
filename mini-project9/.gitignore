@@ -1,5 +1,6 @@
 #ignore dataset
 datasets
+road-dataset
 
 #ignore yolov5
 yolov5
@@ -7,12 +8,19 @@ yolov5
 #ignore pycache
 *.__pycache__
 
+#gen_data.py
+gen_data.py
+
 #ignore runs
 runs
 
 #ignore model
 *.pt
 *.keras
+*.h5
 
-9-3_yolo\kitchen.jpg
-9-3_yolo\kitchen_yolo_out_py.jpg
+#ignore csv files
+*.csv
+
+#ignore json files
+*.json

@@ -1,58 +1,47 @@
-# CS5330 Group 1 - Multi-Class Object Detection (Projects 9-1 and 9-2)
+# CS5330 Group 1 - Project 9-1, 9-2 README: Multi-class Detection using RCNN
 
-## Project 9-1: Multi-Class Object Detection with RCNN
+## 9-1 : Developing a Multi-Class Object Recognition Model
+1. Dataset Expansion and Annotation:
+- We enhanced our dataset by incorporating a "remotes" category, utilizing images from our previous work (located in the remotes directory). We employed LabelMe to annotate these images, creating bounding boxes and storing the annotations as JSON files in the dataset folder.
+2. Annotation Format Conversion
+- To prepare our data for model training, we developed the json_to_csv.py script, which transforms JSON annotations into the YOLO format.
+3. Multi-Class Recognition Model Development
+- We adapted the provided single-class detection code to accommodate both "remotes" and "airplane" classes, resulting in rcnn-multi.py. This script handles data loading, model training, and evaluation. Due to the extensive dataset and training iterations, this process is computationally intensive. Upon completion, the script generates a performance graph and example detection results.
+5. Model and Data Storage
+Given the large file sizes, we've stored our model and associated data in a cloud repository. Access Model and Data Here
 
-### Step 1: Dataset Creation and Image Annotation
-We added a "remotes" class to our dataset, using images from mini-project 7 (stored in the `remotes` folder). After installing **LabelMe**, we annotated these images with bounding boxes and saved the annotations as JSON files in the `images` folder.
+### Running Phase A
 
-### Step 2: Convert Annotations from JSON to CSV
-To prepare the annotations for training, we used the `json_to_csv.py` script to convert JSON files to CSV format.
+1. Retrieve the necessary files from the cloud repository.
+2. Train the multi-class model:
 
-### Step 3: Modify RCNN Code for Multi-Class Training
-We updated the provided RCNN code to handle both "remotes" and "airplanes" classes, saving it as `rcnn-multi.py`. Running this script loads the images and annotations to train the model. Given the dataset size and number of epochs, this process is time-consuming. Upon completion, a loss graph is saved in the folder along with sample test results.
+`python multi_class_detector.py`
 
-### Step 4: Model Testing
-We evaluated the model using `test_rcnn_6.py`, testing it on three random images from each class ("remotes" and "airplanes").
+3. Evaluate the model:
 
-### Step 5: Upload Model and Data to Google Drive
-Due to large file sizes, we uploaded the data and model to Google Drive. [[Model and Data](https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/mini-project9?csf=1&web=1&e=5Zhica).]
+`python evaluate_model.py`
 
-### How to Run 9-1
-1. Download the necessary data and model files from Google Drive.
-2. Train the model:  
-   ```
-   python rcnn-multi.py
-    ```
-3. Test the model with sample data:
-    ```
-    python test_rcnn_6.py
-    ```
+## Phase B: Optimizing Detection Performance
+1. Real-time Performance Assessment
+- To gauge our 9-1 model's real-time capabilities, we utilized WebCamSave-rcnn.py for webcam-based testing. While object detection was accurate, the frame rate was suboptimal, resulting in noticeable lag.
+2. Model Optimization with LightDetector
+- In 9-2, we focused on enhancing the model's efficiency to achieve faster inference and higher frame rates. We developed rcnn_light.py, a streamlined version of our original model, designed to boost speed without sacrificing detection accuracy. After implementation, we retrained this optimized model and conducted tests to verify performance improvements.
+3. Cloud Storage of Optimized Model
+- Due to file size constraints, we've uploaded both the optimized model and its associated data to our cloud repository. Access Optimized Model and Data
 
-## Project 9-2: Performance Optimization of the Multi-Class Object Detection Model
+### Running Phase B
+1. Test the initial model's real-time performance:
 
-### Step 1: Initial Model Testing with Webcam Input
-To evaluate the performance of our 9-1 model in a real-time setting, we used `WebCamSave-rcnn.py` to test the model with webcam input. The model accurately detected objects but had low FPS, resulting in laggy and delayed output.
+`python WebCamSave-rcnn.py`
 
-### Step 2: Improving Model Efficiency with RCNN-Light
-In 9-2, our focus was on optimizing the model to achieve faster inference times and higher FPS. We developed `rcnn-light.py`, a streamlined version of the model, aimed at enhancing speed without compromising detection accuracy. After modifying the code, we retrained this lightweight model and tested it to confirm performance gains.
-
-### Step 3: Uploading Optimized Model and Data to Google Drive
-Due to the large file sizes, we uploaded both the optimized model and associated data to Google Drive for easy access. [Models and Data](https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/mini-project9?csf=1&web=1&e=5Zhica)
-
-### How to Run 9-2
-1. Test the initial model’s performance on webcam input:
-   ```
-   python WebCamSave-rcnn.py
-    ```
 2. Train the optimized model:
-    ```
-    python rcnn_light.py
-    ```
-3. Test the optimized model:
-    ```
-    python test_rcnn_light.py
-    ```
-4. Re run the webcam to compare results:
-    ```
-    python WebCamSave-rcnn.py 
-    ```
+
+`python light_detector.py`
+
+3. Evaluate the optimized model:
+
+`python test_rcnn.py`
+
+4. Reassess real-time performance:
+
+`python WebCamSave-rcnn.py`

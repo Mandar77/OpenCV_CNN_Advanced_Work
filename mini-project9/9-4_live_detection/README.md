@@ -1,6 +1,6 @@
-# Traffic Sign and Signal Detection Using YOLOv5
+# Group 1: Stop Sign and Traffic Signal Live Detection Using YOLOv5
 
-This project aims to develop an object detection system using a YOLOv5 model to recognize and classify "Stop Sign" and "Traffic Light" objects in real-time. These detections are essential for autonomous driving systems. The model was trained on a custom dataset and tested on real driving footage to evaluate its effectiveness in detecting these traffic elements.
+This project aims to develop an object detection system using a YOLOv5 model to recognize and classify "Stop Sign" and "Traffic Light" objects in real-time.
 
 ## Dataset Information
 
@@ -9,8 +9,8 @@ This project aims to develop an object detection system using a YOLOv5 model to 
 The training dataset consists of labeled images for "Stop Sign" and "Traffic Light" classes.
 
 - **Classes**:
-  - **Traffic Light**: 1,326 images with bounding box annotations in `.txt` format.
-  - **Stop Sign**: 639 images with bounding box annotations in `.txt` format.
+  - **Traffic Light**: 1,402 images with bounding box annotations in `.txt` format.
+  - **Stop Sign**: 715 images with bounding box annotations in `.txt` format.
 - **Annotation Format**: Each image is annotated using YOLO format, where each `.txt` file contains the coordinates and class labels for objects in the image.
 - **Source**: The training dataset can be downloaded [[here](https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/mini-project9?csf=1&web=1&e=5Zhica)].
 

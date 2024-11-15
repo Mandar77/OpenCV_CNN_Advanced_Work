@@ -1,158 +1,135 @@
-# import the necessary packages
 import cv2
 import numpy as np
 import time
-import os
 import argparse
 import tensorflow as tf
 
-# Load the pre-trained model
-final_model = tf.keras.models.load_model('my_model_weights.h5')
+# Configuration
+MODEL_PATH = 'multi_class_detector.h5'
+CONFIDENCE_THRESHOLD = 0.85
+NMS_THRESHOLD = 0.5
+MAX_PROPOSALS = 15
+FRAME_SKIP = 2
+RESIZE_FACTOR = 0.5
 
-# Non-maximum Suppression function
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Real-time object detection from video or camera")
+    parser.add_argument("-i", "--input", type=str, help="Path to the input video file")
+    parser.add_argument("-o", "--output", type=str, help="Path to the output video file")
+    return parser.parse_args()
 
-
-def non_max_suppression(boxes, overlapThresh):
+def apply_non_max_suppression(boxes, threshold):
     if len(boxes) == 0:
         return []
-    if boxes.dtype.kind == "i":
-        boxes = boxes.astype("float")
+    
+    boxes = boxes.astype("float")
     pick = []
-    x1 = boxes[:, 0]
-    y1 = boxes[:, 1]
-    x2 = boxes[:, 2]
-    y2 = boxes[:, 3]
-    scores = boxes[:, 4]
+    
+    x1, y1, x2, y2, scores = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3], boxes[:, 4]
     area = (x2 - x1 + 1) * (y2 - y1 + 1)
     idxs = np.argsort(scores)
+    
     while len(idxs) > 0:
         last = len(idxs) - 1
         i = idxs[last]
         pick.append(i)
+        
         xx1 = np.maximum(x1[i], x1[idxs[:last]])
         yy1 = np.maximum(y1[i], y1[idxs[:last]])
         xx2 = np.minimum(x2[i], x2[idxs[:last]])
         yy2 = np.minimum(y2[i], y2[idxs[:last]])
+        
         w = np.maximum(0, xx2 - xx1 + 1)
         h = np.maximum(0, yy2 - yy1 + 1)
         overlap = (w * h) / area[idxs[:last]]
-        idxs = np.delete(idxs, np.concatenate(
-            ([last], np.where(overlap > overlapThresh)[0])))
-    return pick  # Return the indices instead of boxes
+        
+        idxs = np.delete(idxs, np.concatenate(([last], np.where(overlap > threshold)[0])))
+    
+    return pick
 
-
-# Set up argument parser
-parser = argparse.ArgumentParser(description="Video file path or camera input")
-parser.add_argument("-f", "--file", type=str, help="Path to the video file")
-parser.add_argument("-o", "--out", type=str, help="Output video file name")
-
-args = parser.parse_args()
-
-# Check if the file argument is provided, otherwise use the camera
-if args.file:
-    vs = cv2.VideoCapture(args.file)
-else:
-    vs = cv2.VideoCapture(0)  # 0 is the default camera
-
-time.sleep(2.0)
-
-# Get the default resolutions
-width = int(vs.get(3))
-height = int(vs.get(4))
-
-# Define the codec and create a VideoWriter object
-out_filename = args.out
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter(out_filename, fourcc, 20.0, (width, height), True)
-
-# Initialize frame counters for FPS calculation
-fps_start_time = time.time()
-frame_count = 0
-frame_skip = 2  # Process every second frame
-
-# loop over the frames from the video stream
-while True:
-    # grab the frame from video stream
-    ret, frame = vs.read()
-    if not ret:
-        break
-
-    # Skip frames to improve FPS
-    if frame_count % frame_skip != 0:
-        frame_count += 1
-        continue
-
-    # Increment the frame count
-    frame_count += 1
-    fps_end_time = time.time()
-    fps = frame_count / (fps_end_time - fps_start_time)
-
-    # Resize frame for faster processing
-    small_frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
-
-    # Apply Selective Search to propose regions
+def generate_proposals(image):
     ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
-    ss.setBaseImage(small_frame)
+    ss.setBaseImage(image)
     ss.switchToSelectiveSearchFast()
-    ssresults = ss.process()
+    return ss.process()[:MAX_PROPOSALS]
 
-    imOut = frame.copy()
+def process_frame(frame, model):
+    small_frame = cv2.resize(frame, (int(frame.shape[1] * RESIZE_FACTOR), int(frame.shape[0] * RESIZE_FACTOR)))
+    proposals = generate_proposals(small_frame)
+    
     boxes = []
-    labels = []  # Separate list for labels
+    labels = []
+    
+    for x, y, w, h in proposals:
+        x, y, w, h = map(lambda v: int(v / RESIZE_FACTOR), (x, y, w, h))
+        region = frame[y:y+h, x:x+w]
+        resized = cv2.resize(region, (224, 224))
+        prediction = model.predict(np.expand_dims(resized, axis=0))[0]
+        
+        label = "Controller" if np.argmax(prediction) == 1 else "Aircraft"
+        score = prediction[1] if label == "Controller" else prediction[0]
+        
+        if score > CONFIDENCE_THRESHOLD:
+            boxes.append([x, y, x+w, y+h, score])
+            labels.append(label)
+    
+    return np.array(boxes), labels
 
-    # Process each region proposal
-    # Limit proposals for performance
-    for e, result in enumerate(ssresults[:15]):
-        x, y, w, h = result
-        # Scale bounding box to original size
-        x, y, w, h = x * 2, y * 2, w * 2, h * 2
-        timage = frame[y:y + h, x:x + w]
-        resized = cv2.resize(timage, (224, 224), interpolation=cv2.INTER_AREA)
-        resized = np.expand_dims(resized, axis=0)
-        out = final_model.predict(resized)
-        label = "Remote" if np.argmax(out[0]) == 1 else "Airplane"
-        score = out[0][1] if label == "Remote" else out[0][0]
+def draw_detections(frame, boxes, labels):
+    for box, label in zip(boxes, labels):
+        x1, y1, x2, y2, score = map(int, box[:5])
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(frame, f"{label} ({score:.2f})", (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    return frame
 
-        if score > 0.85:
-            # Only numerical data here
-            boxes.append([x, y, x + w, y + h, score])
-            labels.append(label)  # Keep label in a separate list
+def main():
+    args = parse_arguments()
+    model = tf.keras.models.load_model(MODEL_PATH)
+    
+    cap = cv2.VideoCapture(args.input if args.input else 0)
+    width, height = int(cap.get(3)), int(cap.get(4))
+    
+    out = None
+    if args.output:
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter(args.output, fourcc, 20.0, (width, height))
+    
+    frame_count = 0
+    start_time = time.time()
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        frame_count += 1
+        if frame_count % FRAME_SKIP != 0:
+            continue
+        
+        boxes, labels = process_frame(frame, model)
+        nms_indices = apply_non_max_suppression(boxes, NMS_THRESHOLD)
+        
+        nms_boxes = boxes[nms_indices]
+        nms_labels = [labels[i] for i in nms_indices]
+        
+        frame = draw_detections(frame, nms_boxes, nms_labels)
+        
+        fps = frame_count / (time.time() - start_time)
+        cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        
+        if out:
+            out.write(frame)
+        
+        cv2.imshow("Object Detection", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    if out:
+        out.release()
+    cv2.destroyAllWindows()
 
-    # Convert list of boxes to numpy array for NMS
-    boxes = np.array(boxes, dtype=object)
-
-    # Apply Non-maximum Suppression (NMS)
-    nms_indices = non_max_suppression(boxes, overlapThresh=0.5)
-
-    # Keep only boxes and labels from the selected NMS indices
-    nms_boxes = [np.append(boxes[i], labels[i]) for i in nms_indices]
-
-    # Draw bounding boxes and label on the frame
-    for box in nms_boxes:
-        x1, y1, x2, y2, score, label = box
-        # Ensure coordinates are integers
-        x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
-        cv2.rectangle(imOut, (x1, y1), (x2, y2), (0, 255, 0), 1, cv2.LINE_AA)
-        cv2.putText(imOut, f"{label} ({float(score):.2f})", (x1, y1 - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-
-    # Display FPS on the frame
-    cv2.putText(imOut, f"FPS: {fps:.2f}", (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-
-    # Write the frame to the output video file
-    if args.out:
-        out.write(imOut)
-
-    # show the output frame
-    cv2.imshow("Frame", imOut)
-    key = cv2.waitKey(1) & 0xFF
-
-    # if the `q` key was pressed, break from the loop
-    if key == ord("q"):
-        break
-
-# Release the video capture object
-vs.release()
-out.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    main()

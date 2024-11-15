@@ -1,0 +1,7 @@
+names:
+- Stop Sign
+- Traffic Light
+nc: 2
+test: D:\KhouryGithub\CS5330_FA24_Group1\mini-project9\yolov5\datasets\test\images
+train: D:\KhouryGithub\CS5330_FA24_Group1\mini-project9\yolov5\datasets\train\images
+val: D:\KhouryGithub\CS5330_FA24_Group1\mini-project9\yolov5\datasets\valid\images
