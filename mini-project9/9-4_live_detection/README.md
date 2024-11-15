@@ -9,7 +9,7 @@ This project aims to develop an object detection system using a YOLOv5 model to 
 The training dataset consists of labeled images for "Stop Sign" and "Traffic Light" classes.
 
 - **Classes**:
-  - 1383 training images and corresponding labels
+  - 1350 training images and corresponding labels
   - 100 testing images and corresponding labels
   - 300 validation images and corresponding labels
   - Somewhat equally distributed into both "Stop Signs" and Traffic Signals"
