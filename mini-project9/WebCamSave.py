@@ -7,6 +7,7 @@ import time
 import os
 import argparse
 
+
 # Set up argument parser
 parser = argparse.ArgumentParser(description="Video file path or camera input")
 parser.add_argument("-f", "--file", type=str, help="Path to the video file")
