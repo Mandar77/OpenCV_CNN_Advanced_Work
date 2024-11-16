@@ -151,3 +151,11 @@ source venv/bin/activate  # Linux/Mac
 ### Model Training:
 
 `python main.py`
+
+### Personal Contributions:
+
+Mandar Ambulkar: Data Generation.
+
+Cen Chang & Harshal Jorwekar: Model Implementation and Optimization.
+
+Mandar Ambulkar & Harshal Jorwekar: Testing the model.
