@@ -1,0 +1,9 @@
+#ignore models
+*.pt
+
+#ignore input output files
+*.mp4
+*.avi
+
+#ignore guide code
+live_opticalflow.py
