@@ -1,78 +1,72 @@
-# CS5330 Group 1 - Mini-Project 11: Follow Everything
+# Mini-Project 11: Real-Time Object Detection and Tracking
 
-## Project Overview
+## Overview
 
-This project implements a real-time object detection and tracking system using a webcam. It combines YOLO (You Only Look Once) for object detection with an optical flow algorithm for tracking. The application detects objects using YOLO and then tracks their movement across frames using optical flow, allowing it to follow detected objects as they move.
-
-## Team Members
-1. Cen Chang
-2. Harshal Jorwekar
-3. Mandar Ambulkar
-
-### Video Demonstration
-A video demonstration of the project can be found [here](https://youtu.be/iYdC2y10cRQ). The video first plays the input video and then the output of the program.
-
-## Setup Instructions
-- Clone the repository:
-
-```
-git clone https://github.khoury.northeastern.edu/mandar07/CS5330_FA24_Group1.git
-cd CS5330_FA24_Group1/mini-project11
-```
-
-- Install required libraries:
-
-```
-pip install opencv-python ultralytics numpy
-```
-
-## Usage:
-
-- Run the main script:
-
-```
-python WebCamSave.py [-f VIDEO_FILE]
-```
-
-- Use -f VIDEO_FILE to specify an input video file. If not provided, the script will use the default webcam.
-- Press 'q' to quit the application.
+This project demonstrates a real-time system that combines object detection using YOLOv8 with motion tracking using Lucas-Kanade optical flow. The application processes a video feed from a webcam or a file, draws bounding boxes around detected objects, and visualizes motion by drawing trails for prominent features in the scene.
 
 ## Features
 
-- Object Detection: Uses YOLO to detect objects in real-time from the webcam feed.
-- Object Tracking: Implements optical flow to track detected objects across frames.
-- Multiple Object Handling: Can detect and track multiple objects simultaneously.
-- Video Output: Saves the processed video with detection and tracking visualizations as 'output.avi'.
+-   **Object Detection**: Uses a pre-trained YOLOv8n model to detect and track objects in real-time.
+-   **Motion Tracking**: Implements Lucas-Kanade optical flow to track the movement of keypoints between frames.
+-   **Combined Visualization**: Overlays both the YOLO detection bounding boxes and the optical flow tracks onto the video feed.
+-   **Video Input**: Can process video from a live webcam or a pre-recorded video file.
+-   **Video Output**: Saves the processed video with all visualizations to `output.avi`.
+
+## Setup Instructions
+
+1.  **Clone the repository** (if you haven't already).
+2.  **Install required libraries**:
+    ```bash
+    pip install opencv-python ultralytics numpy
+    ```
+    *Note*: The `ultralytics` package provides the YOLOv8 implementation. The line `os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'` is included in the script to avoid potential issues with conflicting libraries on some systems.
+
+## How to Run
+
+-   **To use the default webcam**:
+    ```bash
+    python WebCamSave.py
+    ```
+-   **To use a video file**:
+    ```bash
+    python WebCamSave.py -f path/to/your/video.mp4
+    ```
+-   Press 'q' to quit the application. The output will be saved as `output.avi`.
+
+## How It Works
+
+The script processes the video frame by frame in a main loop, performing both detection and tracking in each iteration.
+
+1.  **Initialization**:
+    -   A YOLOv8n model is loaded.
+    -   Video capture and a video writer are initialized.
+    -   Parameters for the Lucas-Kanade optical flow algorithm are set.
+
+2.  **Main Loop**:
+    -   **YOLO Detection**: The current frame is passed to the `yolo.track()` method. This returns the bounding boxes, class labels, and confidence scores for the detected objects.
+    -   **Optical Flow Calculation**:
+        -   The frame is converted to grayscale.
+        -   In the first frame, a set of strong corners to track is detected using `cv2.goodFeaturesToTrack`.
+        -   In subsequent frames, `cv2.calcOpticalFlowPyrLK` is used to calculate the new positions of these points from the previous frame to the current one.
+    -   **Visualization**:
+        -   The YOLO bounding boxes and labels are drawn on the frame in blue.
+        -   The optical flow tracks (lines showing the movement of keypoints) are drawn on a mask, which is then overlaid on the frame. The current position of each tracked point is marked with a red circle.
+    -   **Output**: The combined frame is displayed on the screen and written to the output video file.
 
 ## Implementation Details
 
-- YOLO Model: We use YOLOv8n for object detection.
-- Optical Flow Algorithm: Lucas-Kanade method is used for tracking objects between frames.
-- Target Objects: The system can detect and track multiple objects, with a focus on [specify your target objects, e.g., persons, vehicles].
+### Object Detection with YOLOv8
+-   The script uses the `ultralytics` library, which is the official implementation of YOLOv8.
+-   `yolo = YOLO('yolov8n.pt')` loads the smallest, fastest pre-trained YOLOv8 model.
+-   `results = yolo.track(frame, persist=True)[0]` performs detection and tracking. The `persist=True` argument tells the tracker to remember the tracks from the previous frame.
 
-## Project Structure
+### Motion Tracking with Optical Flow
+-   **Lucas-Kanade Method**: This is a sparse optical flow method, meaning it tracks a sparse set of feature points (not every pixel).
+-   **`cv2.goodFeaturesToTrack`**: This function is used to find prominent corners in the image, which are good features to track.
+-   **`cv2.calcOpticalFlowPyrLK`**: This is the core function for calculating the optical flow. It uses image pyramids (`Pyr`) to handle larger motions.
 
-- WebCamSave.py: Main script combining YOLO detection and optical flow tracking.
-- live_opticalflow.py: Reference implementation of optical flow (not directly used in the final solution).
-- README.md: This file, containing project documentation.
+**Note on the combination**: In this implementation, the YOLO detection and optical flow are performed mostly independently. YOLO detects and tracks objects, while optical flow tracks the motion of generic feature points across the entire frame. The visualizations are then combined. A more advanced implementation might use the YOLO detections to initialize the points for optical flow, allowing for more targeted tracking of specific objects.
 
-### Work Breakdown
+## Video Demonstration
 
-1. Mandar Ambulkar:
-    - Implement YOLO object detection
-    - Integrate YOLO with WebCamSave.py
-    - Write README section on object detection
-2. Harshal Jorwekar:
-    - Implement optical flow tracking
-    - Integrate tracking with YOLO detection
-    - Handle multiple object tracking
-3. Cen Chang:
-    - Set up development environment
-    - Handle video input/output
-    - Record demonstration video
-    - Complete remaining README sections
-
-4. Shared Responsibilities:
-    - Testing and debugging
-    - Performance optimization
-    - Final documentation review
+A video demonstration of the project can be found [here](https://youtu.be/iYdC2y10cRQ).

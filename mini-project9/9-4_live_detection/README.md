@@ -1,98 +1,82 @@
-# Group 1: Stop Sign and Traffic Signal Live Detection Using YOLOv5
+# Project 9-4: Live Detection of Stop Signs and Traffic Lights with YOLOv5
 
-This project aims to develop an object detection system using a YOLOv5 model to recognize and classify "Stop Sign" and "Traffic Light" objects in real-time.
+## Overview
 
-## Dataset Information
+This project uses a custom-trained YOLOv5 model to perform real-time detection of "Stop Signs" and "Traffic Lights" from a live webcam feed or a video file. The project covers the entire workflow from setting up the dataset and training the model to running live inference.
 
-### 1. Training Dataset
+## Workflow
 
-The training dataset consists of labeled images for "Stop Sign" and "Traffic Light" classes.
+1.  **Setup**: Clone the YOLOv5 repository and organize the custom dataset.
+2.  **Configuration**: Create a `data.yaml` file to define the dataset paths and class names.
+3.  **Training**: Train the YOLOv5 model on the custom dataset. The `train.py` script is a helper for this process.
+4.  **Inference**: Use the `WebCamSave.py` script to run the trained model on a live video feed or a video file.
 
-- **Classes**:
-  - 1350 training images and corresponding labels
-  - 100 testing images and corresponding labels
-  - 300 validation images and corresponding labels
-  - Somewhat equally distributed into both "Stop Signs" and Traffic Signals"
+## Setup and Configuration
 
-- **Annotation Format**: Each image is annotated using YOLO format, where each `.txt` file contains the coordinates and class labels for objects in the image.
+1.  **Clone YOLOv5 Repository**:
+    First, you need to clone the official YOLOv5 repository, which contains the training and detection scripts.
+    ```bash
+    git clone https://github.com/ultralytics/yolov5
+    cd yolov5
+    pip install -r requirements.txt
+    ```
 
-- **Source**: The training dataset can be downloaded [[here](https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/mini-project9?csf=1&web=1&e=5Zhica)].
+2.  **Download and Organize Dataset**:
+    -   Download the custom dataset of stop signs and traffic lights from the link in the "Model and Data Access" section.
+    -   Organize your dataset into `train`, `valid`, and `test` sets, with `images` and `labels` subdirectories for each, as expected by YOLOv5.
 
-### 2. Testing Dataset
+3.  **Configure `data.yaml`**:
+    Create a `data.yaml` file and place it in the `yolov5` directory. This file tells the training script where to find the data and what the classes are.
+    ```yaml
+    # The number of classes in your dataset
+    nc: 2
 
-The testing dataset consists of two real-world driving videos captured on city streets, simulating real-time scenarios for model evaluation.
+    # The names of your classes
+    names: ['Stop Sign', 'Traffic Light']
 
-- **Dataset**: Video of real driving scenario.
-- **Source**: The testing dataset can be accessed [here](https://northeastern-my.sharepoint.com/:v:/g/personal/ambulkar_m_northeastern_edu/ERFRsfHtIcVHig-FeHjv7TcBmbto97ri10JkdTsKMZ-WcA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&email=jorwekar.h%40northeastern.edu&e=x1ciZO).
+    # Paths to your training and validation data
+    # These should be relative to the yolov5 directory
+    train: ../path/to/your/dataset/train/images
+    val: ../path/to/your/dataset/valid/images
+    ```
 
-### 3. Output Data
+## Scripts in this Directory
 
-- **Dataset**: The output dataset contains annotated test results after running the trained model on the driving videos.
-- **Source**: The output data can be downloaded [add link here].
+-   **`train.py`**: A helper script that configures and launches the YOLOv5 training process. It sets hyperparameters and paths before calling the official `yolov5/train.py` script. **Note**: This script may contain hardcoded local paths and might need to be adapted to your directory structure.
+-   **`WebCamSave.py`**: The main script for running inference. It loads the custom-trained model (`best.pt`) and performs real-time detection on a video source.
 
----
+## How to Train the Model
 
-## Model Training
+To train the model, you run the `train.py` script from the YOLOv5 directory. The `train.py` script in this project is a wrapper that sets up the command for you. A more general way to run the training is:
 
-The model was trained using YOLOv5, a highly efficient object detection algorithm for real-time detection. Below are the key steps and settings in the training process.
-
-### 1. Preprocessing
-
-- The images were resized to ensure consistency across the dataset.
-- YOLOv5 annotation format was used, where each object in the image is labeled with its class and bounding box coordinates in a `.txt` file.
-
-### 2. Training Process
-
-- **Transfer Learning**: YOLOv5's pretrained weights (`yolov5s.pt`) served as the base model to speed up training and improve accuracy.
-- **Model Architecture**: YOLOv5 small model (`yolov5s`) was chosen for its balance between speed and accuracy.
-- **Hyperparameters**:
-  - **Epochs**: 100 epochs for model convergence.
-  - **Batch Size**: 16 images per batch.
-  - **Learning Rate**: 0.01 (default for YOLOv5).
-  - **Optimizer**: Adam.
-  - **Patience**: 50
-  - **Save-Period**: 10
-  - **Workers**: 8 (Can be adjusted according to CPU cores)
-
-### 3. Steps to Train the Model
-
-1. **Download Dataset**
-
-   - Download and unzip the training dataset from the link above.
-
-2. **Clone the YOLOv5 Repository**
-
-   ```
-   git clone https://github.com/ultralytics/yolov5
-   cd yolov5
-   pip install -r requirements.txt
-   ```
-3. Configure Dataset in YOLOv5:
-
-- Modify `data.yaml` in YOLOv5 repository as follows:
-  
-  ```
-  names:
-  - Stop Sign
-  - Traffic Light
-  nc: 2
-  test: D:\KhouryGithub\CS5330_FA24_Group1\mini-project9\yolov5\datasets\test\images
-  train: D:\KhouryGithub\CS5330_FA24_Group1\mini-project9\yolov5\datasets\train\images
-  val: D:\KhouryGithub\CS5330_FA24_Group1\mini-project9\yolov5\datasets\valid\images
-
-  ```
-
-4. Train the YOLOv5 model:
-
-```
-python 9-4_live_detection\train.py
+```bash
+python train.py --img 640 --batch 16 --epochs 100 --data data.yaml --weights yolov5s.pt --cache
 ```
 
-5. Run detection and save results:
+-   `--img`: Input image size.
+-   `--batch`: Batch size.
+-   `--epochs`: Number of training epochs.
+-   `--data`: Path to your `data.yaml` file.
+-   `--weights`: The pre-trained model to start from (e.g., `yolov5s.pt` for transfer learning).
 
-```
-python WebCamSave.py -o output_video.avi
-python WebCamSave.py -f real_dataset/test1.mp4 -o test1_output.avi
-```
+After training, the best model weights will be saved as `runs/train/exp/weights/best.pt`. You should move this file to the `9-4_live_detection` directory.
 
-These results highlight the model’s effectiveness in recognizing both "Stop Sign" and "Traffic Light" objects, supporting its potential application in real-time autonomous driving systems.
+## How to Run Live Detection
+
+The `WebCamSave.py` script uses the trained `best.pt` model to perform detection.
+
+-   **To run on a live webcam feed**:
+    ```bash
+    python WebCamSave.py
+    ```
+-   **To run on a video file and save the output**:
+    ```bash
+    python WebCamSave.py -f path/to/your/video.mp4 -o path/to/output.avi
+    ```
+    -   `-f`: Path to the input video file.
+    -   `-o`: Path to save the output video with detections.
+
+## Model and Data Access
+
+-   **Dataset**: The training dataset can be downloaded from [this link](https://northeastern-my.sharepoint.com/:f:/r/personal/ambulkar_m_northeastern_edu/Documents/mini-project9?csf=1&web=1&e=5Zhica).
+-   **Testing Videos**: Real-world driving videos for testing can be accessed [here](https://northeastern-my.sharepoint.com/:v:/g/personal/ambulkar_m_northeastern_edu/ERFRsfHtIcVHig-FeHjv7TcBmbto97ri10JkdTsKMZ-WcA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&email=jorwekar.h%40northeastern.edu&e=x1ciZO).

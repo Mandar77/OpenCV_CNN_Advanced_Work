@@ -1,64 +1,83 @@
-# CS5330 Group 1 - Project 9-3 README: YOLO Object Detection for Cups and Bananas
-## Step 1: Setting Up YOLO with WebCamSave_Yolo.py
-We developed a custom script WebCamSave_Yolo.py to implement YOLO (You Only Look Once) object detection with a focus on identifying cups and bananas. This script utilizes a deep neural network for real-time object recognition and automatic video recording.
-- Script Setup:
-  1. The script initializes the YOLO model using a configuration file (yolov3.cfg) and pre-trained weights (yolov3.weights).
-  2. It loads coco.names, which contains the list of objects the model can detect.
-  3. We specifically set the target classes to "cup" and "banana".
-- Key Components:
-  1. ObjectDetector Class: Handles YOLO model initialization and object detection.
-  2. VideoRecorder Class: Manages automatic video recording when target objects are detected.
-- Step 2: Running the Object Detection System
-To run the system:
-1. Ensure all required files (yolov3.cfg, yolov3.weights, coco.names) are in the same directory as the script.
-1. Execute the script:
+# Project 9-3: Object Detection with YOLOv3
 
-`python WebCamSave_Yolo.py`
+## Overview
 
-## Process:
-- The script initializes the webcam and begins real-time object detection.
-- When a cup or banana is detected, it automatically starts recording a 5-second video clip.
+This project explores object detection using YOLOv3 (You Only Look Once, version 3), a popular real-time object detection algorithm. The project includes two main scripts: a generic YOLOv3 detector and a specialized application that detects specific objects ("cup" and "banana") from a webcam and automatically records video clips when they are found.
 
-## Output:
+## Features
 
-- The script displays a live feed with detected objects marked by bounding boxes and labels.
-- Video clips (e.g., DetectedObject_1.mp4, DetectedObject_2.mp4) are saved when cups or bananas are detected.
+-   **YOLOv3 Integration**: Uses a pre-trained YOLOv3 model to detect objects from the COCO dataset.
+-   **Generic Object Detector**: A script (`object_detection_yolo.py`) to run YOLOv3 on image or video files.
+-   **Specialized Webcam Detector**: A script (`WebCamSave_Yolo.py`) that:
+    -   Detects specific target classes ("cup" and "banana") from a live webcam feed.
+    -   Automatically records a 5-second video clip when a target object is detected.
+    -   Is structured with classes for the detector and video recorder, making it easy to customize.
 
-### Key Features and Code Structure
-1. Target Class Selection:
-- We set TARGET_CLASSES = ["cup", "banana"] to focus detection on these specific objects.
+## Setup
 
-2. ObjectDetector Class:
-- detect_objects(frame): Processes each frame for object detection.
-- process_detections(frame, outputs): Filters detections and draws bounding boxes.
+1.  **Install Dependencies**:
+    ```bash
+    pip install opencv-python numpy
+    ```
+2.  **Download YOLOv3 Model Files**:
+    You need the YOLOv3 weights, configuration file, and class names. A shell script `getModels.sh` is provided to download these files. Run it from your terminal:
+    ```bash
+    bash getModels.sh
+    ```
+    This will download `yolov3.weights`, `yolov3.cfg`, and `coco.names`.
 
-3. VideoRecorder Class:
-- start_recording(): Initiates video recording when a target object is detected.
-- stop_recording(): Saves the recorded video clip after 5 seconds.
+## Scripts in this Directory
 
-4. Main Execution Flow:
-- Continuous frame capture from the webcam.
-- Object detection on each frame.
-- Automatic video recording triggered by cup or banana detection.
+-   **`object_detection_yolo.py`**: A generic, command-line based script for running YOLOv3 object detection. It is based on the official OpenCV example and can be used to process both image and video files.
+-   **`WebCamSave_Yolo.py`**: A custom application that uses the webcam to detect specific objects ("cup" and "banana") and automatically saves a 5-second video clip when they are detected.
 
-5. Customization Options
-- Modifying Target Objects: Change the TARGET_CLASSES list in the main() function to detect different objects.
-- Adjusting Detection Sensitivity: Modify conf_threshold and nms_threshold in the ObjectDetector initialization.
-- Changing Recording Duration: Alter the time check in VideoRecorder.should_stop() method.
+## How to Run
 
-6. Video Saving Parameters: 
-- Adjust save_fps in VideoRecorder initialization to change the frame rate of saved videos.
+### 1. Generic Object Detector (`object_detection_yolo.py`)
+You can use this script to run YOLOv3 on a video or image file.
 
-### How to Run
-1. Ensure yolov3.weights, yolov3.cfg, and coco.names are in the script's directory.
+-   **For a video file**:
+    ```bash
+    python object_detection_yolo.py --video=your_video.mp4
+    ```
+-   **For an image file**:
+    ```bash
+    python object_detection_yolo.py --image=your_image.jpg
+    ```
 
-2. Run the script:
+### 2. Webcam Detector with Auto-Recording (`WebCamSave_Yolo.py`)
+This script is designed to be run without command-line arguments.
 
-`python WebCamSave_Yolo.py`
+```bash
+python WebCamSave_Yolo.py
+```
+-   The application will open a window showing the webcam feed.
+-   If a "cup" or "banana" is detected, it will start recording a 5-second video.
+-   The recorded videos will be saved as `DetectedObject_1.mp4`, `DetectedObject_2.mp4`, and so on.
+-   Press 'q' to quit.
 
-3. The system will start detecting cups and bananas, automatically recording video clips when these objects appear.
+## Implementation Details (`WebCamSave_Yolo.py`)
 
-4. Press 'q' to exit the program.
+The `WebCamSave_Yolo.py` script is structured into two main classes:
 
+### `ObjectDetector`
+-   This class encapsulates all the logic related to the YOLOv3 model.
+-   **`__init__`**: Loads the YOLOv3 network, class names, and sets the target classes.
+-   **`detect_objects`**: Takes a frame as input, runs it through the network, and returns a list of detected objects.
+-   **`process_detections`**: Applies non-maximum suppression (NMS) to filter out weak and overlapping bounding boxes.
+-   **`draw_prediction`**: Draws the bounding boxes and labels on the frame.
 
-This implementation demonstrates the application of YOLO object detection for specific object recognition and automated video capture, showcasing its potential in various real-world scenarios.
+### `VideoRecorder`
+-   This class handles the logic for recording video clips.
+-   **`start_recording`**: Sets a flag to start recording and initializes a list to store frames.
+-   **`add_frame`**: Adds the current frame to the list if recording is active.
+-   **`stop_recording`**: Saves the stored frames to a `.mp4` video file and resets the state.
+-   **`should_stop`**: Checks if the 5-second recording duration has passed.
+
+### Main Logic
+The main part of the script runs a loop that:
+1.  Reads a frame from the webcam.
+2.  Calls the `detector.detect_objects` method.
+3.  Checks if any of the detected objects are in the `target_classes` list.
+4.  If a target object is found and recording is not already in progress, it calls `recorder.start_recording()`.
+5.  If the recorder has been running for 5 seconds, it calls `recorder.stop_recording()`.

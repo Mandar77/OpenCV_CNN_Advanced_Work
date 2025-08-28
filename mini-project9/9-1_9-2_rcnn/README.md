@@ -1,47 +1,74 @@
-# CS5330 Group 1 - Project 9-1, 9-2 README: Multi-class Detection using RCNN
+# Project 9-1 & 9-2: Multi-class Detection using R-CNN
 
-## 9-1 : Developing a Multi-Class Object Recognition Model
-1. Dataset Expansion and Annotation:
-- We enhanced our dataset by incorporating a "remotes" category, utilizing images from our previous work (located in the remotes directory). We employed LabelMe to annotate these images, creating bounding boxes and storing the annotations as JSON files in the dataset folder.
-2. Annotation Format Conversion
-- To prepare our data for model training, we developed the json_to_csv.py script, which transforms JSON annotations into the YOLO format.
-3. Multi-Class Recognition Model Development
-- We adapted the provided single-class detection code to accommodate both "remotes" and "airplane" classes, resulting in rcnn-multi.py. This script handles data loading, model training, and evaluation. Due to the extensive dataset and training iterations, this process is computationally intensive. Upon completion, the script generates a performance graph and example detection results.
-5. Model and Data Storage
-Given the large file sizes, we've stored our model and associated data in a cloud repository. Access Model and Data Here
+## Overview
 
-### Running Phase A
+This project implements a multi-class object detector using a simplified R-CNN (Regions with CNN features) approach. The goal is to detect two classes of objects: "remotes" and "airplanes". The project is divided into two main parts:
+-   **9-1**: Developing and training the multi-class R-CNN model.
+-   **9-2**: "Optimizing" the model for better performance, which in this case involves retraining the model, and testing it in a real-time scenario.
 
-1. Retrieve the necessary files from the cloud repository.
-2. Train the multi-class model:
+The implementation uses a two-stage training process. First, a base model (VGG16) is fine-tuned to distinguish object proposals from the background. Then, a second model is trained on top of the base model's features to perform the final multi-class classification.
 
-`python multi_class_detector.py`
+## Workflow
 
-3. Evaluate the model:
+1.  **Data Preparation**:
+    -   Images for "remotes" and "airplanes" are collected.
+    -   Bounding box annotations are created for these images (e.g., using a tool like LabelMe).
+    -   The `json_to_csv.py` script is used to convert the annotations from JSON format to a CSV file.
+2.  **Model Training (`rcnn-multi.py` or `rcnn-light.py`)**:
+    -   The script generates region proposals for each image.
+    -   It creates a training dataset by labeling proposals as "positive" (object) or "negative" (background) based on their Intersection over Union (IoU) with the ground truth boxes.
+    -   It trains the two-stage model on this data.
+3.  **Evaluation**:
+    -   The trained model is tested on sample images to generate detection results.
+    -   The `WebCamSave-rcnn.py` script is used to evaluate the model's performance on a live webcam feed.
 
-`python evaluate_model.py`
+## Implementation Details
 
-## Phase B: Optimizing Detection Performance
-1. Real-time Performance Assessment
-- To gauge our 9-1 model's real-time capabilities, we utilized WebCamSave-rcnn.py for webcam-based testing. While object detection was accurate, the frame rate was suboptimal, resulting in noticeable lag.
-2. Model Optimization with LightDetector
-- In 9-2, we focused on enhancing the model's efficiency to achieve faster inference and higher frame rates. We developed rcnn_light.py, a streamlined version of our original model, designed to boost speed without sacrificing detection accuracy. After implementation, we retrained this optimized model and conducted tests to verify performance improvements.
-3. Cloud Storage of Optimized Model
-- Due to file size constraints, we've uploaded both the optimized model and its associated data to our cloud repository. Access Optimized Model and Data
+### 1. Region Proposal
+-   A simple sliding window approach (`generate_proposals`) is used to generate region proposals. This is a simplified alternative to the Selective Search algorithm used in the original R-CNN paper.
 
-### Running Phase B
-1. Test the initial model's real-time performance:
+### 2. Data Generation
+-   For each image, positive and negative training samples are generated:
+    -   **Positive samples**: Region proposals with an IoU > 0.5 with a ground truth box.
+    -   **Negative samples**: Region proposals with an IoU < 0.1 with any ground truth box.
+-   This data is used to train the base model.
+-   A separate dataset is created for the final classifier, containing the ground truth objects and some negative samples.
 
-`python WebCamSave-rcnn.py`
+### 3. Two-Stage Model Training
+-   **Base Model**: A VGG16 model, pre-trained on ImageNet, is used as the base. The top layers are replaced with a single dense layer with a sigmoid activation function. This model is trained as a binary classifier to distinguish objects from the background.
+-   **Final Model**: The output of the base model's global average pooling layer is fed into a new dense layer with 2 output units. This model is compiled with a hinge loss, making it act like a linear SVM, to classify the objects into "remote" or "airplane".
 
-2. Train the optimized model:
+### 4. Non-Maximum Suppression (NMS)
+-   After detection, the `apply_non_max_suppression` function is used to filter out redundant, overlapping bounding boxes, keeping only the ones with the highest confidence scores.
 
-`python light_detector.py`
+## Scripts in this Directory
 
-3. Evaluate the optimized model:
+-   `json_to_csv.py`: A utility script to convert bounding box annotations from LabelMe's JSON format to a CSV file required by the training scripts.
+-   `rcnn-multi.py`: The main script for training the multi-class R-CNN model. It saves the trained model as `multi_class_detector.h5`.
+-   `rcnn-light.py`: This script is identical to `rcnn-multi.py` but saves the model as `multi_class_detector_light.h5`. It is intended for training the "optimized" or retrained version of the model.
+-   `WebCamSave-rcnn.py`: A script to run the trained model on a live webcam feed to test its real-time performance.
+-   `test_rcnn.py`: A script to evaluate the performance of the trained model.
 
-`python test_rcnn.py`
+## How to Run
 
-4. Reassess real-time performance:
+### 1. Prepare the Data
+1.  Place your images in the `airplanes` and `remotes` directories.
+2.  Annotate your images and generate CSV files (`airplanes_annotations.csv`, `remotes_annotations.csv`) using `json_to_csv.py`. The CSV should have columns: `image_path`, `x_min`, `y_min`, `x_max`, `y_max`.
 
-`python WebCamSave-rcnn.py`
+### 2. Train the Model
+-   To train the standard model, run:
+    ```bash
+    python rcnn-multi.py
+    ```
+-   To train the "light" model, run:
+    ```bash
+    python rcnn-light.py
+    ```
+    This will save the trained models as `.h5` files.
+
+### 3. Test the Model
+-   To test the model on a live webcam feed, you will need to modify `WebCamSave-rcnn.py` to load your trained model and run it.
+-   To evaluate the model's performance, use the `test_rcnn.py` script.
+
+## Model and Data Storage
+-   The datasets and pre-trained models are large and can be accessed from the cloud storage link provided in the original `README.md`.
